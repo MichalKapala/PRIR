@@ -1,0 +1,25 @@
+{
+    "files.associations": {
+        "chrono": "cpp",
+        "array": "cpp",
+        "cstdint": "cpp",
+        "iostream": "cpp",
+        "functional": "cpp",
+        "new": "cpp",
+        "bitset": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "ranges": "cpp",
+        "utility": "cpp",
+        "system_error": "cpp",
+        "cmath": "cpp",
+        "string": "cpp",
+        "numeric": "cpp",
+        "ostream": "cpp",
+        "deque": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp",
+        "*.tcc": "cpp",
+        "thread": "cpp"
+    }
+}
