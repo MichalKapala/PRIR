@@ -25,13 +25,13 @@ class Main
 		Instant start;
 		Instant end;
 		int dataSize =  30000; // Size of one Data object list
-		int numberOfData = 500; //Number of Data objects
-		int numberOfPackets = 300; //Number of packets- one packet contains numberOfData Data objects
+		int numberOfData = 50000; //Number of Data objects
+		int numberOfPackets = 1; //Number of packets- one packet contains numberOfData Data objects
 
 		DeltaReceiver receiver = new ConcreteDeltaReceiver();
 		ParallelCalculator calculator = new ParallelCalculator();
 		calculator.setDeltaReceiver(receiver);
-		calculator.setThreadsNumber(5);
+		calculator.setThreadsNumber(10);
 
 		for (int j =0; j < numberOfPackets; j++)
 		{
@@ -49,11 +49,9 @@ class Main
 			}
 			end = Instant.now();
 			totalElapsedTime += Duration.between(start, end).toNanos();
-
-
 		}
 
-		Thread.sleep(2000); // Sleep for 2s to let threads finish
+		Thread.sleep(100);
 		System.out.println("Elapsed time " + (totalElapsedTime / 1000.0 ) + "us");
 		System.out.println(receiver.GetDeltaCtr());
 
