@@ -8,15 +8,13 @@ class Main
 {
 	private static Data GenerateData(int id, int size)
 	{
-
 			ArrayList<Integer> v = new ArrayList<>();
 			for(int j=0;j <size; j++)
 			{
-				int randomNum = ThreadLocalRandom.current().nextInt(0, 100 + 1);
+				int randomNum = ThreadLocalRandom.current().nextInt(0, 10 + 1);
 				v.add(randomNum);
 
 			}
-
 		return new ConcreteData(id, size, v);
 	}
 
@@ -25,13 +23,13 @@ class Main
 		Instant start;
 		Instant end;
 		int dataSize =  30000; // Size of one Data object list
-		int numberOfData = 5000; //Number of Data objects
-		int numberOfPackets = 300; //Number of packets- one packet contains numberOfData Data objects
+		int numberOfData = 500; //Number of Data objects
+		int numberOfPackets = 500; //Number of packets- one packet contains numberOfData Data objects
 
 		DeltaReceiver receiver = new ConcreteDeltaReceiver();
 		ParallelCalculator calculator = new ParallelCalculator();
 		calculator.setDeltaReceiver(receiver);
-		calculator.setThreadsNumber(5);
+		calculator.setThreadsNumber(10);
 
 		for (int j =0; j < numberOfPackets; j++)
 		{
