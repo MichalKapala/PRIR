@@ -8,7 +8,7 @@ public class ConcreteDeltaReceiver implements DeltaReceiver {
         {
             deltaCounter++;
 //            var firstDelta = deltas.get(0);
-//            System.out.println(firstDelta.getDataID());
+//            System.out.println("Received " + firstDelta.getDataID());
         }
 
     }

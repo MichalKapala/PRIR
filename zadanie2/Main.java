@@ -8,15 +8,13 @@ class Main
 {
 	private static Data GenerateData(int id, int size)
 	{
-
 			ArrayList<Integer> v = new ArrayList<>();
 			for(int j=0;j <size; j++)
 			{
-				int randomNum = ThreadLocalRandom.current().nextInt(0, 100 + 1);
+				int randomNum = ThreadLocalRandom.current().nextInt(0, 10 + 1);
 				v.add(randomNum);
 
 			}
-
 		return new ConcreteData(id, size, v);
 	}
 
@@ -25,8 +23,8 @@ class Main
 		Instant start;
 		Instant end;
 		int dataSize =  30000; // Size of one Data object list
-		int numberOfData = 50000; //Number of Data objects
-		int numberOfPackets = 1; //Number of packets- one packet contains numberOfData Data objects
+		int numberOfData = 500; //Number of Data objects
+		int numberOfPackets = 500; //Number of packets- one packet contains numberOfData Data objects
 
 		DeltaReceiver receiver = new ConcreteDeltaReceiver();
 		ParallelCalculator calculator = new ParallelCalculator();
@@ -41,7 +39,7 @@ class Main
 				dataList.add(GenerateData(i, dataSize));
 			}
 
-//			Collections.shuffle(dataList);
+			Collections.shuffle(dataList);
 
 			start = Instant.now();
 			for (int i = 0; i < numberOfData ; i++) {
@@ -51,7 +49,7 @@ class Main
 			totalElapsedTime += Duration.between(start, end).toNanos();
 		}
 
-		Thread.sleep(100);
+		Thread.sleep(3000);
 		System.out.println("Elapsed time " + (totalElapsedTime / 1000.0 ) + "us");
 		System.out.println(receiver.GetDeltaCtr());
 
