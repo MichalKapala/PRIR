@@ -1,10 +1,8 @@
 
 import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
 class ReservationSystem  implements Cinema {
@@ -54,7 +52,7 @@ class ReservationSystem  implements Cinema {
     }
 
     @Override
-    public Set<Integer> notReservedSeats() throws RemoteException{
+    public synchronized Set<Integer> notReservedSeats() throws RemoteException{
         ClearSeats();
         return availableSeats;
     }
@@ -63,33 +61,41 @@ class ReservationSystem  implements Cinema {
     public boolean reservation(String user, Set<Integer> seats) throws RemoteException{
         ClearSeats();
 
-        if(!availableSeats.containsAll(seats))
+        synchronized (this.reservations)
         {
-            return false;
-        }
+            if(!availableSeats.containsAll(seats))
+            {
+                return false;
+            }
 
-        availableSeats.removeAll(seats);
-        reservations.put(Pair.of(user, System.currentTimeMillis()), seats);
+            availableSeats.removeAll(seats);
+            reservations.put(Pair.of(user, System.currentTimeMillis()), seats);
+        }
 
         return true;
     }
 
     public boolean confirmation(String user) throws RemoteException{
         boolean retValue = false;
-        for(var it = reservations.entrySet().iterator(); it.hasNext(); ) {
-            var entry = it.next();
-            if(entry.getKey().getKey().equals(user)){
-                for(var seat : entry.getValue()) {
-                    confirmedReservations.put(seat, user);
+
+        synchronized (this.reservations)
+        {
+            for(var it = reservations.entrySet().iterator(); it.hasNext(); ) {
+                var entry = it.next();
+                if(entry.getKey().getKey().equals(user)){
+                    for(var seat : entry.getValue()) {
+                        confirmedReservations.put(seat, user);
+                    }
+                    it.remove();
+                    retValue = true;
                 }
-                it.remove();
-                retValue = true;
             }
         }
+
         return retValue;
     }
 
-    public String whoHasReservation(int seat) throws RemoteException{
+     public synchronized String whoHasReservation(int seat) throws RemoteException{
         return confirmedReservations.get(seat);
     }
 

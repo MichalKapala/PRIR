@@ -119,6 +119,38 @@ public class Client {
             assert cinema.whoHasReservation(25).equals("KOWALSKI");
 
         }
+
+        public void TestConfirmationAfterTimeDelay2() throws RemoteException {
+
+            Set<Integer> seats = new HashSet<>();
+            Set<Integer> seats2 = new HashSet<>();
+
+            cinema.configuration(100, 1000);
+
+            for(int i =0; i< 50; i++) {
+                seats.add(i);
+            }
+            for(int i =0; i< 25; i++) {
+                seats2.add(i);
+            }
+
+            assert cinema.reservation("KOWALSKI", seats);
+            assert cinema.notReservedSeats().size() == 50;
+            assert cinema.whoHasReservation(25) == null;
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            assert cinema.reservation("NOWAK", seats2);
+
+            assert !cinema.confirmation("KOWALSKI");
+            assert cinema.notReservedSeats().size() == 75;
+            assert cinema.confirmation("NOWAK");
+            assert cinema.whoHasReservation(24).equals("NOWAK");
+
+        }
     }
 
 
@@ -129,10 +161,16 @@ public class Client {
             Tester tester = new Tester();
 
 //              For sure run only one testaces each time
+//            System.out.println("START TEST 1");
 //            tester.TestSequentialReservation();
+//            System.out.println("START TEST 2");
 //            tester.TestTakingReservedSeats();
+//            System.out.println("START TEST 3");
 //            tester.TestNoConfirmationInTime();
-            tester.TestConfirmationAfterTimeDelay();
+//            System.out.println("START TEST 4");
+//            tester.TestConfirmationAfterTimeDelay();
+            System.out.println("START TEST 5");
+            tester.TestConfirmationAfterTimeDelay2();
 
         } catch (Exception e) {
             System.out.println("Some error occured on client side " + e);
