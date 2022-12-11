@@ -24,14 +24,6 @@ class ReservationSystem  implements Cinema {
     public ReservationSystem()  {
         super();
 
-
-//        try {
-//            Cinema stub1 = (Cinema) UnicastRemoteObject.exportObject(this, 0);
-//            LocateRegistry.getRegistry().bind(SERVICE_NAME, stub1);
-//        } catch (Exception e) {
-//            System.out.println("Some error occured " + e);
-//        }
-
         try {
             Cinema stub = (Cinema) UnicastRemoteObject.exportObject(this, 0);
             var context = new InitialContext();
@@ -52,20 +44,28 @@ class ReservationSystem  implements Cinema {
     }
 
     @Override
-    public synchronized Set<Integer> notReservedSeats() throws RemoteException{
+    public Set<Integer> notReservedSeats() throws RemoteException{
         ClearSeats();
-        return availableSeats;
+        synchronized (reservations)
+        {
+            return availableSeats;
+        }
+
     }
 
 
     public boolean reservation(String user, Set<Integer> seats) throws RemoteException{
-        ClearSeats();
 
         synchronized (this.reservations)
         {
-            if(!availableSeats.containsAll(seats))
+            if(!availableSeats.containsAll(seats)) //Podwójne sprawdzanie robi robote, nie usuwamy miejsc jeżeli nowy użytkownik nie chce ich zarezerwować 
             {
-                return false;
+                ClearSeats();
+                if(!availableSeats.containsAll(seats)) {
+
+                    return false;
+                }
+
             }
 
             availableSeats.removeAll(seats);
@@ -75,11 +75,10 @@ class ReservationSystem  implements Cinema {
         return true;
     }
 
-    public boolean confirmation(String user) throws RemoteException{
+    public synchronized boolean confirmation(String user) throws RemoteException{
         boolean retValue = false;
 
-        synchronized (this.reservations)
-        {
+
             for(var it = reservations.entrySet().iterator(); it.hasNext(); ) {
                 var entry = it.next();
                 if(entry.getKey().getKey().equals(user)){
@@ -90,7 +89,7 @@ class ReservationSystem  implements Cinema {
                     retValue = true;
                 }
             }
-        }
+
 
         return retValue;
     }
@@ -99,14 +98,16 @@ class ReservationSystem  implements Cinema {
         return confirmedReservations.get(seat);
     }
 
-    private synchronized void ClearSeats()
+    private void ClearSeats()
     {
-        for(var it = reservations.entrySet().iterator(); it.hasNext(); ) {
-            var entry = it.next();
-            long duration = System.currentTimeMillis() - entry.getKey().getValue();
-            if (duration >= maxTimeForConfirmation) {
-                availableSeats.addAll(entry.getValue());
-                it.remove();
+        synchronized (this.reservations) {
+            for (var it = reservations.entrySet().iterator(); it.hasNext(); ) {
+                var entry = it.next();
+                long duration = System.currentTimeMillis() - entry.getKey().getValue();
+                if (duration >= maxTimeForConfirmation) {
+                    availableSeats.addAll(entry.getValue());
+                    it.remove();
+                }
             }
         }
     }

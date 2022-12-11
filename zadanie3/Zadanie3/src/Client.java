@@ -7,16 +7,22 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashSet;
 import java.util.Set;
+import  java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Client {
 
 
+
     static class Tester
     {
+        private ExecutorService executor;
         Cinema cinema;
         public Tester() throws NotBoundException, RemoteException {
             Registry registry = LocateRegistry.getRegistry();
              cinema = (Cinema) registry.lookup("CINEMA");
+             this.executor = Executors.newFixedThreadPool(10);
         }
 
         public void TestSequentialReservation() throws RemoteException {
@@ -63,35 +69,115 @@ public class Client {
 
         public void TestNoConfirmationInTime() throws RemoteException {
 
-            Set<Integer> seats = new HashSet<>();
-
             cinema.configuration(100, 1000);
 
-            for(int i =0; i< 50; i++) {
-                seats.add(i);
-            }
+            this.executor.submit( () ->
+                    {
+                        Set<Integer> seats = new HashSet<>();
+                        for (int i = 0; i < 50; i++) {
+                            seats.add(i);
+                        }
+                    try {
+                        if (cinema.reservation("KOWALSKI", seats))
+                        {
+                            System.out.println("RESERVED SEATS KOWALSKI OK");
+                        }
+                        if( cinema.whoHasReservation(25) == null)
+                        {
+                            System.out.println("NOBODY CONFIRMED SEATS KOWALSKI OK");
+                        }
+                        if(cinema.notReservedSeats().size() == 50)
+                        {
+                            System.out.println("SEATS NUBMER EQUALS 50 KOWALSKI OK");
+                        }
 
-            assert cinema.reservation("KOWALSKI", seats);
-            assert cinema.whoHasReservation(25) == null;
-            assert cinema.notReservedSeats().size() == 50;
+                    }catch (Exception e)
+                    {
+                        System.out.println("TEST FAILED KOWALSKI");
+                    }
+                        try {
+                            Thread.currentThread().sleep(1500);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        try {
+                            assert cinema.confirmation("KOWALSKI") == false;
+                        }catch (Exception e)
+                        {
+                            System.out.println("TEST FAILED KOWALSKI CONFIRMATION");
+                            System.out.println("KOWALSKI WAS ABLE TO CONFIRM");
+                        }
+
+                    });
+
+            this.executor.submit( () ->
+            {
+                Set<Integer> seats = new HashSet<>();
+
+                for (int i = 0; i < 50; i++) {
+                    seats.add(i);
+                }
+
+                try {
+                    Thread.currentThread().sleep(1050);
+                } catch (InterruptedException e) {
+                    System.out.println("RUNTIME");
+                    throw new RuntimeException(e);
+
+                }
+
+                try {
+                    if (cinema.notReservedSeats().size() == 100)
+                    {
+                        System.out.println("NOT RESERVED SEATS NOWAK EQUALS 100 OK");
+                    }else {
+                        System.out.println("NOT RESERVED SEATS NOWAK EQUALS 100 FAILED");
+                    }
+
+                    if( cinema.reservation("NOWAK", seats))
+                    {
+                        System.out.println("RESERVED SEATS NOWAK OK");
+                    }else {
+                        System.out.println("RESERVED SEATS NOWAK FAILED");
+                    }
+
+                    if( cinema.confirmation("NOWAK"))
+                    {
+                        System.out.println("CONFIRMED SEATS NOWAK OK");
+                    }else {
+                        System.out.println("CONFIRMED SEATS NOWAK FAILED");
+                    }
+
+                    if( cinema.whoHasReservation(25).equals("NOWAK"))
+                    {
+                        System.out.println("HAS RESERVATION SEATS NOWAK OK");
+                    }else {
+                        System.out.println("HAS RESERVATION SEATS NOWAK FAILED");
+                    }
+
+                    if( cinema.notReservedSeats().size() == 50)
+                    {
+                        System.out.println("NOT RESERVED SEATS NOWAK OK");
+                    }else {
+                        System.out.println("NOT RESERVED SEATS NOWAK FAILED");
+                    }
+
+
+                }catch (Exception e)
+                {
+                    System.out.println("TEST FAILED NOWAK + " + e);
+                    throw new RuntimeException(e);
+                }
+            });
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(5500);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
 
-            seats.clear();
-
-            for(int i =0; i< 50; i++) {
-                seats.add(i);
-            }
-
-            assert cinema.notReservedSeats().size() == 100;
-            assert cinema.reservation("NOWAK", seats);
-            assert cinema.confirmation("NOWAK");
-            assert cinema.whoHasReservation(25).equals("NOWAK");
-            assert cinema.notReservedSeats().size() == 50;
+            System.out.println("FINISH");
         }
 
         public void TestConfirmationAfterTimeDelay() throws RemoteException {
@@ -165,12 +251,12 @@ public class Client {
 //            tester.TestSequentialReservation();
 //            System.out.println("START TEST 2");
 //            tester.TestTakingReservedSeats();
-//            System.out.println("START TEST 3");
-//            tester.TestNoConfirmationInTime();
+            System.out.println("START TEST 3");
+            tester.TestNoConfirmationInTime();
 //            System.out.println("START TEST 4");
 //            tester.TestConfirmationAfterTimeDelay();
-            System.out.println("START TEST 5");
-            tester.TestConfirmationAfterTimeDelay2();
+//            System.out.println("START TEST 5");
+//            tester.TestConfirmationAfterTimeDelay2();
 
         } catch (Exception e) {
             System.out.println("Some error occured on client side " + e);
