@@ -11,7 +11,7 @@ class Main
 			ArrayList<Integer> v = new ArrayList<>();
 			for(int j=0;j <size; j++)
 			{
-				int randomNum = ThreadLocalRandom.current().nextInt(0, 10 + 1);
+				int randomNum = ThreadLocalRandom.current().nextInt(0, 1000 + 1);
 				v.add(randomNum);
 
 			}
@@ -22,14 +22,14 @@ class Main
 		long totalElapsedTime = 0;
 		Instant start;
 		Instant end;
-		int dataSize =  30000; // Size of one Data object list
-		int numberOfData = 500; //Number of Data objects
-		int numberOfPackets = 500; //Number of packets- one packet contains numberOfData Data objects
+		int dataSize =  300; // Size of one Data object list
+		int numberOfData = 50; //Number of Data objects
+		int numberOfPackets = 50; //Number of packets- one packet contains numberOfData Data objects
 
 		DeltaReceiver receiver = new ConcreteDeltaReceiver();
 		ParallelCalculator calculator = new ParallelCalculator();
 		calculator.setDeltaReceiver(receiver);
-		calculator.setThreadsNumber(10);
+		calculator.setThreadsNumber(12);
 
 		for (int j =0; j < numberOfPackets; j++)
 		{
@@ -41,6 +41,7 @@ class Main
 
 			Collections.shuffle(dataList);
 
+//			Thread.sleep(3000);
 			start = Instant.now();
 			for (int i = 0; i < numberOfData ; i++) {
 				calculator.addData(dataList.get(i));
