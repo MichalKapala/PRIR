@@ -106,18 +106,13 @@ class ParallelCalculator implements DeltaParallelCalculator {
 					}
 					return currenLocalDeltaList;
 				} else {
-					// Otherwise, split the set in half and calculate the differences in each half
 					int middle = start + (end - start) / 2;
 					DifferenceCalculator left = new DifferenceCalculator(start, middle);
 					DifferenceCalculator right = new DifferenceCalculator(middle, end);
-
-					// Start the calculations in the left and right halves in parallel
 					left.fork();
 					right.fork();
-
 					List<Delta> retLeft = left.join();
 					List<Delta> retRight = right.join();
-
 					retLeft.addAll(retRight);
 					return retLeft;
 				}
