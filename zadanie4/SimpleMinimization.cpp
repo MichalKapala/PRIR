@@ -5,23 +5,29 @@
 #include <stdlib.h>
 #include <sys/time.h>
 
+#include <chrono>
 #include <iostream>
+#include <thread>
 const double DR_SHRINK = 0.8;
 
 using namespace std;
+using namespace std::chrono_literals;
 
 SimpleMinimization::SimpleMinimization(Function *f, double timeLimit) : Minimization(f, timeLimit)
 {
+    for (int i = 0; i < 24; i++)
+    {
+        auto struct_ptr = std::make_unique<drand48_data>();
+        srand48_r(time(NULL) + i * 100, struct_ptr.get());
+        randBufferV.push_back(std::move(struct_ptr));
+    }
+
     generateRandomPosition();
     bestX = x;
     bestY = y;
     bestZ = z;
 
     bestV = function->value(bestX, bestY, bestZ);
-
-    unsigned long seed = (unsigned long)time(NULL);
-
-    srand48_r(time(NULL), &randBuffer);
 }
 
 SimpleMinimization::~SimpleMinimization() {}
@@ -29,8 +35,8 @@ SimpleMinimization::~SimpleMinimization() {}
 void SimpleMinimization::find(double dr_ini, double dr_fin, int idleStepsLimit)
 {
     double v, xnew, ynew, znew, vnew, dr;
+    double xl, yl, zl;
     int idleSteps = 0;  // liczba krokow, ktore nie poprawily lokalizacji
-    struct drand48_data randBufferL;
 
     std::cout << "Start " << std::endl;
 
@@ -38,23 +44,21 @@ void SimpleMinimization::find(double dr_ini, double dr_fin, int idleStepsLimit)
     {
         // inicjujemy losowo polozenie startowe w obrebie kwadratu o bokach od min do max
 
-#pragma omp parallel firstprivate(randBufferL) private(xnew, ynew, znew, dr, idleSteps, vnew)
-        {
-#pragma omp critical
-            {
-                generateRandomPosition();
-                v = function->value(x, y, z);  // wartosc funkcji w punkcie startowym
-            }
+        generateRandomPosition();
+        v = function->value(x, y, z);
 
+#pragma omp parallel private(xnew, ynew, znew, dr, idleSteps, vnew)
+        {
             idleSteps = 0;
             dr = dr_ini;
 
             while ((dr > dr_fin) && (idleSteps < idleStepsLimit))
             {
                 double xShift, yShift, zShift;
-                drand48_r(&randBufferL, &xShift);
-                drand48_r(&randBufferL, &yShift);
-                drand48_r(&randBufferL, &zShift);
+
+                drand48_r(randBufferV[omp_get_thread_num()].get(), &xShift);
+                drand48_r(randBufferV[omp_get_thread_num()].get(), &yShift);
+                drand48_r(randBufferV[omp_get_thread_num()].get(), &zShift);
 
                 xnew = x + (xShift - 0.5) * dr;
                 ynew = y + (yShift - 0.5) * dr;
@@ -114,10 +118,9 @@ void SimpleMinimization::find(double dr_ini, double dr_fin, int idleStepsLimit)
 void SimpleMinimization::generateRandomPosition()
 {
     double xShift, yShift, zShift;
-    static drand48_data randBufferL;
-    drand48_r(&randBufferL, &xShift);
-    drand48_r(&randBufferL, &yShift);
-    drand48_r(&randBufferL, &zShift);
+    drand48_r(randBufferV[omp_get_thread_num()].get(), &xShift);
+    drand48_r(randBufferV[omp_get_thread_num()].get(), &yShift);
+    drand48_r(randBufferV[omp_get_thread_num()].get(), &zShift);
 
     // std::cout << "Thread " << omp_get_thread_num() << " xshift " << xShift << std::endl;
 

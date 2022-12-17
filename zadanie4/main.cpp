@@ -39,7 +39,7 @@ void showHistory(Minimization *m)
 {
     int size = m->historySize();
     std::vector<Point3D *> history = m->getHistory();
-    for (int i = 0; i < size; i++)
+    for (int i = 0; i < 200; i++)
     {
         cout << i << " ---- " << (*history[i]) << endl;
     }
@@ -69,8 +69,10 @@ int main(int ac, char **av)
     showTimers(stopTMS, startTMS, stop, start);
 
     if (SHOW_HISTORY)
-        // showHistory(minimization);
+    {
+        showHistory(minimization);
         std::cout << "History size: " << minimization->historySize() << std::endl;
+    }
 
     return 0;
 }

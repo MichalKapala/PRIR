@@ -1,6 +1,8 @@
 #ifndef MINIMUM_H
 #define MINIMUM_H
 
+#include <memory>
+
 #include "Function.h"
 #include "Minimization.h"
 
@@ -15,7 +17,7 @@ public:
     ~SimpleMinimization();
 
 private:
-    struct drand48_data randBuffer;
+    std::vector<std::unique_ptr<drand48_data>> randBufferV;
 };
 
 #endif
