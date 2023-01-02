@@ -39,16 +39,15 @@ void SimpleMinimization::find(double dr_ini, double dr_fin, int idleStepsLimit)
     int idleSteps = 0;  // liczba krokow, ktore nie poprawily lokalizacji
 
     std::cout << "Start " << std::endl;
-
-    while (hasTimeToContinue())
+#pragma omp parallel firstprivate(dr, idleSteps, v, xnew, ynew, znew, vnew), shared(x, y, z)
     {
-        // inicjujemy losowo polozenie startowe w obrebie kwadratu o bokach od min do max
-
-        generateRandomPosition();
-        v = function->value(x, y, z);
-
-#pragma omp parallel private(xnew, ynew, znew, dr, idleSteps, vnew)
+        while (hasTimeToContinue())
         {
+            // inicjujemy losowo polozenie startowe w obrebie kwadratu o bokach od min do max
+
+            generateRandomPosition();
+            v = function->value(x, y, z);
+
             idleSteps = 0;
             dr = dr_ini;
 
@@ -110,9 +109,9 @@ void SimpleMinimization::find(double dr_ini, double dr_fin, int idleStepsLimit)
                     std::cout << "New better position: " << x << ", " << y << ", " << z << " value = " << v << std::endl;
                 }
             }
-        }
 
-    }  // mamy czas na obliczenia
+        }  // mamy czas na obliczenia
+    }
 }
 
 void SimpleMinimization::generateRandomPosition()
