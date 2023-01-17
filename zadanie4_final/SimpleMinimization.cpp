@@ -14,6 +14,9 @@ using namespace std;
 SimpleMinimization::SimpleMinimization(Function *f, double timeLimit)
     : Minimization(f, timeLimit) {
 
+  // initalize values. Here we dont need to make it thread safe
+  // No need of separate struct
+
   drand48_data buff;
   generateRandomPosition(x, y, z, buff);
   bestX = x;
@@ -113,9 +116,6 @@ void SimpleMinimization::generateRandomPosition(double &xl, double &yl,
   drand48_r(&buff, &xShift);
   drand48_r(&buff, &yShift);
   drand48_r(&buff, &zShift);
-
-  // std::cout << "Thread " << omp_get_thread_num() << " xshift " << xShift <<
-  // std::endl;
 
   xl = xShift * (maxX - minX) + minX;
   yl = yShift * (maxY - minY) + minY;

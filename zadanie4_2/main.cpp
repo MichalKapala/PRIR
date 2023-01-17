@@ -3,6 +3,7 @@
 #include "Point3D.h"
 #include "SimpleMinimization.h"
 #include "SimpleTestFunction.h"
+#include <iomanip>
 #include <iostream>
 #include <omp.h>
 #include <sys/time.h>
@@ -41,7 +42,7 @@ void showHistory(Minimization *m) {
   int size = m->historySize();
   std::vector<Point3D *> history = m->getHistory();
   for (int i = 0; i < size; i++) {
-    cout << i << " ---- " << (*history[i]) << endl;
+    cout << i << " ---- " << std::setprecision(15) << (*history[i]) << endl;
   }
 }
 
@@ -67,8 +68,8 @@ int main(int ac, char **av) {
   showBestResultFound(minimization);
   showTimers(stopTMS, startTMS, stop, start);
 
-  // if (true)
-  //   showHistory(minimization);
+  if (true)
+    showHistory(minimization);
   std::cout << minimization->getHistory().size() << std::endl;
 
   return 0;

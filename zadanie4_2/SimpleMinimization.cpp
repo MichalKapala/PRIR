@@ -31,13 +31,13 @@ void SimpleMinimization::find(double dr_ini, double dr_fin,
 
 #pragma omp parallel
   {
-
     drand48_data buff;
-    srand48_r(time(NULL), &buff);
+    srand48_r(time(NULL) + omp_get_thread_num(), &buff);
+
+    double v, xnew, ynew, znew, vnew, dr, x_loc, y_loc, z_loc, v_loc;
 
     while (hasTimeToContinue()) {
 
-      double v, xnew, ynew, znew, vnew, dr, x_loc, y_loc, z_loc, v_loc;
       int idleSteps = 0; // liczba krokow, ktore nie poprawily lokalizacji
                          // inicjujemy losowo polozenie startowe w obrebie
                          // kwadratu o bokach od min do max
@@ -87,6 +87,7 @@ void SimpleMinimization::find(double dr_ini, double dr_fin,
         x = x_loc;
         y = y_loc;
         z = z_loc;
+
         addToHistory();
 
         if (v_loc < bestV) { // znalezlismy najlepsze polozenie globalnie
